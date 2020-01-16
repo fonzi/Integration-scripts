@@ -6,50 +6,46 @@
 
 import os
 import json
-import urllib.request
+import requests
 import argparse
 import sys
+import json
 
-def form_payload(build_id, build_number, job_name, build_url):
+def form_payload(build_number, job_name, build_url, status):
     """Forms the python representation of the data payload to be sent from the passed configuration"""
-    message = "Build #" + build_number + " failed for " + job_name
-    description = "Build #" + build_number + " failed for " + job_name + "\nPlease check detailed logs here: " + build_url + "console"
+    message = "Build #{} {} for {}".format(build_number, status, job_name)
+    description = "Build #{} {} for {}. \nPlease check detailed logs here: {}console".format(build_number, status, job_name, build_url)
     payload_rep = {"message" : message , "description" : description}
     return payload_rep
 
-def post_to_url(url, payload):
+def post_to_url(url, payload):   # TODO: add "status" and "eventID" once Aahel PR gets merged
     """Posts the formed payload as json to the passed url"""
     try:
-        req = urllib.request.Request(url, data=bytes(json.dumps(payload), "utf-8"))
-        req.add_header("Content-Type", "application/json")
-        resp = urllib.request.urlopen(req)
-        if resp.status > 299:
-           print("Request failed with status code %s : %s" % (resp.status, resp.read()))
-    except urllib.request.URLError as e:
-        if e.code >= 400:
-            print("Some error occured while processing the event, ", e)
+        headers = {'content-type': 'application/json'}
+        req = requests.post(url, data = bytes(json.dumps(payload).encode('utf-8')), headers = headers)
+        if req.status_code > 299:
+            print("Request failed with status code %s : %s" % (req.status_code, req.content))
+    except requests.exceptions.RequestException as e:
+            print("Unable to create an incident with Squadcast, ", e)
+            sys.exit(2)
 
-def get_job_status(job_url):
+def get_job_status(job_url, build_number, username, password):
+    """Retrieves the job status from the Jenkins API"""
     try:
-        jenkins_stream = urllib.request.Request(job_url + "lastBuild/api/json")
-        build_status_json = json.load( jenkins_stream )
+        url = "{}{}/api/json".format(job_url, str(build_number))
+        res = requests.get(url, auth=(username, password))
+        build_status_json = json.loads(res.text)
+        return build_status_json["result"]
 
-        if build_status_json.has_key( "result" ):   
-            print (build_status_json["result"])
-
-    except urllib.request.URLError as e:
-        print ("URL Error: " + str(e.code) )
+    except requests.exceptions.RequestException as e:
+        print (e)
         sys.exit(2)
-
-    
-
-def get_prevjob_status():
-    pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Passing build information.')
     parser.add_argument('--url', help='Squadcast API endpoint')
-    parser.add_argument('--build_id', help='Build ID of the pipeline')
+    parser.add_argument('--username', help='Jenkins username')
+    parser.add_argument('--password', help='Jenkins password')
     parser.add_argument('--build_number', type=int, help='Build number of the pipeline')
     parser.add_argument('--job_name', help='Job name of the pipeline')
     parser.add_argument('--build_url', help='URL of the pipeline job')
@@ -57,8 +53,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()    
 
-    cur_job_status = get_job_status(args.job_url)
+    cur_job_status = get_job_status(args.job_url, args.build_number, args.username, args.password)
+    prev_job_status = get_job_status(args.job_url, int(args.build_number)-1, args.username, args.password)
 
-    print("Sending data to squadcast")
-    post_to_url(args.url, form_payload(args.build_id, str(args.build_number), args.job_name, args.build_url ))
+    if (prev_job_status == "SUCCESS" and cur_job_status == "FAILURE"):
+        print ("Creating an incident in Squadcast!")
+        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "failed" ))
+    elif (prev_job_status == "FAILURE" and cur_job_status == "SUCCESS"):
+        print ("Resolving an incident in Squadcast!")
+        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "succeeded" ))
+    else:
+        print ("Not required to create an incident..")
+
     print("Done.")
