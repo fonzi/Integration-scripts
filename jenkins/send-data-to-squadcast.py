@@ -9,7 +9,6 @@ import json
 import requests
 import argparse
 import sys
-import json
 
 def form_payload(build_number, job_name, build_url, status):
     """Forms the python representation of the data payload to be sent from the passed configuration"""
