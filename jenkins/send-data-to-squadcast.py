@@ -14,7 +14,7 @@ def form_payload(build_number, job_name, build_url, status):
     """Forms the python representation of the data payload to be sent from the passed configuration"""
     message = "Build #{} {} for {}".format(build_number, status, job_name)
     description = "Build #{} {} for {}. \nPlease check detailed logs here: {}console".format(build_number, status, job_name, build_url)
-    payload_rep = {"message" : message , "description" : description, "status" : status, "event_id" : build_url}
+    payload_rep = {"message" : message , "description" : description, "status" : status, "event_id" : job_name}
     return payload_rep
 
 def post_to_url(url, payload):  
