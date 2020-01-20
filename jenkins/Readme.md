@@ -9,6 +9,7 @@ curl https://raw.githubusercontent.com/squadcastHQ/Integration-scripts/master/je
 ```
 ![Image](assets/jenkins_post_build_step.png)
 Please replace url(Squadcast API endpoint), username and password in the above command
+
 __P.S: We highly recommend cloning this repo and using your repo link in the above curl call, This will allow you to customize your incident description__
 
 ### Sample incident created in Squadcast-App

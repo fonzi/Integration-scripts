@@ -14,10 +14,10 @@ def form_payload(build_number, job_name, build_url, status):
     """Forms the python representation of the data payload to be sent from the passed configuration"""
     message = "Build #{} {} for {}".format(build_number, status, job_name)
     description = "Build #{} {} for {}. \nPlease check detailed logs here: {}console".format(build_number, status, job_name, build_url)
-    payload_rep = {"message" : message , "description" : description}
+    payload_rep = {"message" : message , "description" : description, "status" : status, "event_id" : build_url}
     return payload_rep
 
-def post_to_url(url, payload):   # TODO: add "status" and "eventID" once Aahel PR gets merged
+def post_to_url(url, payload):  
     """Posts the formed payload as json to the passed url"""
     try:
         headers = {'content-type': 'application/json'}
@@ -57,10 +57,10 @@ if __name__ == "__main__":
 
     if (prev_job_status == "SUCCESS" and cur_job_status == "FAILURE"):
         print ("Creating an incident in Squadcast!")
-        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "failed" ))
+        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "trigger" ))
     elif (prev_job_status == "FAILURE" and cur_job_status == "SUCCESS"):
         print ("Resolving an incident in Squadcast!")
-        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "succeeded" ))
+        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "resolve" ))
     else:
         print ("Not required to create an incident..")
 
