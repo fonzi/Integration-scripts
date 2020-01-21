@@ -5,7 +5,7 @@
 + Create an API endpoint in [Squadcast app](https://support.squadcast.com/docs/api)  
 + Add a `Post build task` and run the following command in `Script` text box
 ```sh
-curl https://raw.githubusercontent.com/squadcastHQ/Integration-scripts/master/jenkins/send-data-to-squadcast.py | python3 - --url https://api.squadcast.com/v1/incidents/create/48b92d1336c9d18929aa3ee99e51ec6fc32a6160 --build_number ${BUILD_NUMBER} --job_name ${JOB_NAME} --build_url ${BUILD_URL} --job_url ${JOB_URL} --username *yourusername* --password *typepassword*
+curl https://raw.githubusercontent.com/squadcastHQ/Integration-scripts/master/jenkins/send-data-to-squadcast.py | python3 - --url https://api.squadcast.com/v1/incidents/jenkins/c56a30a7a282321a53c5a94bb2085c24e721bc55 --username *yourusername* --password *enterpassword*
 ```
 ![Image](assets/jenkins_post_build_step.png)
 Please replace url(Squadcast API endpoint), username and password in the above command
