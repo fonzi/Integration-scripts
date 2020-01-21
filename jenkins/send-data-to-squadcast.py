@@ -14,7 +14,9 @@ def form_payload(build_number, job_name, build_url, status):
     """Forms the python representation of the data payload to be sent from the passed configuration"""
     message = "Build #{} {} for {}".format(build_number, status, job_name)
     description = "Build #{} {} for {}. \nPlease check detailed logs here: {}console".format(build_number, status, job_name, build_url)
-    payload_rep = {"message" : message , "description" : description, "status" : status, "event_id" : job_name}
+    payload_rep = {"message" : message , "description" : description, "branch_name" : os.environ['BRANCH_NAME'],
+        "build_url":  build_url, "job_name":  job_name, "build_number":  build_number, "node_name": os.environ['NODE_NAME'],
+        "status" : status, "event_id" : job_name}
     return payload_rep
 
 def post_to_url(url, payload):  
@@ -45,22 +47,23 @@ if __name__ == "__main__":
     parser.add_argument('--url', help='Squadcast API endpoint')
     parser.add_argument('--username', help='Jenkins username')
     parser.add_argument('--password', help='Jenkins password')
-    parser.add_argument('--build_number', type=int, help='Build number of the pipeline')
-    parser.add_argument('--job_name', help='Job name of the pipeline')
-    parser.add_argument('--build_url', help='URL of the pipeline job')
-    parser.add_argument('--job_url', help='URL of the pipeline job')
+
+    build_number = int(os.environ['BUILD_NUMBER'])
+    job_name = os.environ['JOB_NAME']
+    build_url = os.environ['BUILD_URL']
+    job_url = os.environ['JOB_URL']
 
     args = parser.parse_args()    
 
-    cur_job_status = get_job_status(args.job_url, args.build_number, args.username, args.password)
-    prev_job_status = get_job_status(args.job_url, int(args.build_number)-1, args.username, args.password)
+    cur_job_status = get_job_status(job_url, build_number, args.username, args.password)
+    prev_job_status = get_job_status(job_url, int(build_number)-1, args.username, args.password)
 
     if (prev_job_status == "SUCCESS" and cur_job_status == "FAILURE"):
         print ("Creating an incident in Squadcast!")
-        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "trigger" ))
+        post_to_url(args.url, form_payload(str(build_number), job_name, build_url, "trigger" ))
     elif (prev_job_status == "FAILURE" and cur_job_status == "SUCCESS"):
         print ("Resolving an incident in Squadcast!")
-        post_to_url(args.url, form_payload(str(args.build_number), args.job_name, args.build_url, "resolve" ))
+        post_to_url(args.url, form_payload(str(build_number), job_name, build_url, "resolve" ))
     else:
         print ("Not required to create an incident..")
 
