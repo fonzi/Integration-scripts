@@ -14,7 +14,13 @@ def form_payload(build_number, job_name, build_url, status):
     """Forms the python representation of the data payload to be sent from the passed configuration"""
     message = "Build #{} {} for {}".format(build_number, status, job_name)
     description = "Build #{} {} for {}. \nPlease check detailed logs here: {}console".format(build_number, status, job_name, build_url)
-    payload_rep = {"message" : message , "description" : description, #"branch_name" : os.environ['BRANCH_NAME'],
+    
+    branch_name = ""
+    # Check optional env variable
+    if "BRANCH_NAME" in os.environ:
+        branch_name = os.environ['BRANCH_NAME']
+
+    payload_rep = {"message" : message , "description" : description, "branch_name" : branch_name,
         "build_url":  build_url, "job_name":  job_name, "build_number":  build_number, "node_name": os.environ['NODE_NAME'],
         "status" : status, "event_id" : job_name}
     return payload_rep
