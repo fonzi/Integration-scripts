@@ -1,8 +1,3 @@
-# Owner         : fonzi
-# Purpose       : This script will send job details to Squadcast api service 
-# prerequisites : Need to create a service  
-# This script has been tested with Python 3.10. Choco Windows
-
 import os
 import json
 import requests
