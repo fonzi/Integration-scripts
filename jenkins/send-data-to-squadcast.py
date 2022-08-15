@@ -5,12 +5,10 @@ import argparse
 import sys
 
 def form_payload(build_number, job_name, build_url, status):
-    """Forms the python representation of the data payload to be sent from the passed configuration"""
     message = "Build #{} {} for {}".format(build_number, status, job_name)
     description = "Build #{} {} for {}. \nPlease check detailed logs here: {}console".format(build_number, status, job_name, build_url)
     
     branch_name = ""
-    # Check optional env variable
     if "BRANCH_NAME" in os.environ:
         branch_name = os.environ['BRANCH_NAME']
 
@@ -20,7 +18,6 @@ def form_payload(build_number, job_name, build_url, status):
     return payload_rep
 
 def post_to_url(url, payload):  
-    """Posts the formed payload as json to the passed url"""
     try:
         headers = {'content-type': 'application/json'}
         req = requests.post(url, data = bytes(json.dumps(payload).encode('utf-8')), headers = headers)
@@ -31,7 +28,6 @@ def post_to_url(url, payload):
             sys.exit(2)
 
 def get_job_status(job_url, build_number, username, password):
-    """Retrieves the job status from the Jenkins API"""
     try:
         url = "{}{}/api/json".format(job_url, str(build_number))
         res = requests.get(url, auth=(username, password))
