@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
-# Owner         : Squadcast community  
+#!C:\Python310\python.exe
+# Owner         : fonzi
 # Purpose       : This script will send job details to Squadcast api service 
 # prerequisites : Need to create a service  
-# This script has been tested with Python 3.6.
+# This script has been tested with Python 3.10. Choco Windows
 
 import os
 import json
