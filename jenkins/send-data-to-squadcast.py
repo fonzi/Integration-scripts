@@ -1,4 +1,4 @@
-﻿#!"C:\Python310\python.exe"
+﻿#! C:\Python310\python.exe
 # Owner         : fonzi
 # Purpose       : This script will send job details to Squadcast api service 
 # prerequisites : Need to create a service  
